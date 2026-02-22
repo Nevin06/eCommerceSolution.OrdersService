@@ -1,4 +1,5 @@
 using eCommerce.OrdersMicroService.BusinessLogicLayer;
+using eCommerce.OrdersMicroService.BusinessLogicLayer.HttpClients;
 using eCommerce.OrdersMicroService.DataAccessLayer;
 using Microsoft.AspNetCore.Builder;
 using OrdersMicroService.API.Middleware;
@@ -30,6 +31,24 @@ builder.Services.AddCors(options =>
                .AllowAnyHeader();
     });
 });
+
+builder.Services.AddHttpClient<UsersMicroserviceClient>
+    (client =>
+    {
+        //client.BaseAddress = new Uri("http://localhost:9090");
+        client.BaseAddress = new Uri($"http://{builder.Configuration["UsersMicroserviceName"]}:" +
+            $"{builder.Configuration["UsersMicroservicePort"]}");
+    }
+    );
+
+builder.Services.AddHttpClient<ProductsMicroserviceClient>
+    (client =>
+    {
+        //client.BaseAddress = new Uri("http://localhost:8080");
+        client.BaseAddress = new Uri($"http://{builder.Configuration["ProductsMicroserviceName"]}:" +
+            $"{builder.Configuration["ProductsMicroservicePort"]}");
+    }
+    ); // 110
 
 var app = builder.Build();
 

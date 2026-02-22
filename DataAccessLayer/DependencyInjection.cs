@@ -18,7 +18,8 @@ public static class DependencyInjection
         services.AddScoped<IMongoDatabase>(provider =>
         {
             IMongoClient client = provider.GetRequiredService<IMongoClient>();
-            return client.GetDatabase("OrdersDatabase"); // returns MongoDB database object // DB created automatically at runtime
+            //return client.GetDatabase("OrdersDatabase"); // returns MongoDB database object // DB created automatically at runtime
+            return client.GetDatabase(Environment.GetEnvironmentVariable("MONGODB_DATABASE")); // 104
         });
         services.AddScoped<IOrdersRepository, OrdersRepository>();
         return services;
