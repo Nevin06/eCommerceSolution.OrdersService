@@ -60,6 +60,8 @@ public class OrdersService : IOrdersService
             }
         }
 
+        //111
+        List<ProductDTO> productDTOs = new List<ProductDTO>();
         //TO DO: Add logic for checking if ProductID exists in Products microservice
         foreach (var orderItem in orderAddRequest.OrderItems)
         {
@@ -68,6 +70,7 @@ public class OrdersService : IOrdersService
             {
                 throw new ArgumentException($"Invalid Product ID: {orderItem.ProductID}");
             }
+            productDTOs.Add(productDTO);
         }
 
         //TO DO: Add logic for checking if UserID exists in Users microservice // 104
@@ -88,7 +91,32 @@ public class OrdersService : IOrdersService
         Order? addedOrder = await _ordersRepository.AddOrderAsync(order);
         if (addedOrder == null)
             return null;
-        return _mapper.Map<OrderResponse>(addedOrder);
+        OrderResponse addedOrderResponse = _mapper.Map<OrderResponse>(addedOrder);
+        //111
+        if (addedOrderResponse != null)
+        {
+            foreach (OrderItemResponse orderItemResponse in addedOrderResponse.OrderItems)
+            {
+                //ProductDTO? productDTO = await _productsMicroserviceClient.GetProductByProductID(orderItemResponse.ProductID);
+                ProductDTO? productDTO = productDTOs.Where(product => product.ProductID == orderItemResponse.ProductID).FirstOrDefault();
+                if (productDTO == null)
+                    continue;
+                _mapper.Map<ProductDTO, OrderItemResponse>(productDTO, orderItemResponse);
+            }
+        }
+        //112
+        //_mapper.Map<UserDTO, OrderResponse?>(userDto, addedOrderResponse);
+        addedOrderResponse = new OrderResponse(
+                                    addedOrderResponse.OrderID,
+                                    addedOrderResponse.UserID,
+                                    addedOrderResponse.OrderDate,
+                                    addedOrderResponse.TotalBill,
+                                    addedOrderResponse.OrderItems,
+                                    userDto.PersonName ?? "",
+                                    userDto.Email ?? ""
+                                );
+
+        return addedOrderResponse;
     }
 
     public async Task<bool> DeleteOrderAsync(Guid OrderID)
@@ -107,21 +135,83 @@ public class OrdersService : IOrdersService
         Order? order = await _ordersRepository.GetOrderByConditionAsync(filter);
         if (order == null) //93
             return null;
-        return _mapper.Map<OrderResponse>(order);
+        OrderResponse orderResponse =  _mapper.Map<OrderResponse>(order);
+        if (orderResponse != null)
+        {
+            foreach (OrderItemResponse orderItemResponse in orderResponse.OrderItems)
+            {
+                ProductDTO? productDTO = await _productsMicroserviceClient.GetProductByProductID(orderItemResponse.ProductID);
+                if (productDTO == null)
+                    continue;
+                _mapper.Map<ProductDTO, OrderItemResponse>(productDTO, orderItemResponse);
+            }
+        }
+
+        UserDTO? userDTO = await _usersMicroserviceClient.GetUserByUserID(orderResponse.UserID);
+        if (userDTO != null)
+            _mapper.Map<UserDTO, OrderResponse?>(userDTO, orderResponse);
+        return orderResponse;
     }
 
     public async Task<List<OrderResponse>> GetOrdersAsync()
     {
         IEnumerable<Order> orders = await _ordersRepository.GetOrdersAsync();
         List<Order> ordersList = orders.ToList();
-        return _mapper.Map<List<OrderResponse>>(ordersList);
+        List<OrderResponse> orderResponses = _mapper.Map<List<OrderResponse>>(ordersList);
+
+        // TO DO: Load ProductName and Category in each OrderItem //111
+        foreach (OrderResponse orderResponse in orderResponses)
+        {
+            if (orderResponse == null)
+            {
+                continue;
+            }
+
+            foreach (OrderItemResponse orderItemResponse in orderResponse.OrderItems)
+            {
+                ProductDTO? productDTO = await _productsMicroserviceClient.GetProductByProductID(orderItemResponse.ProductID);
+                if (productDTO == null)
+                    continue;
+                _mapper.Map<ProductDTO, OrderItemResponse>(productDTO, orderItemResponse);
+            }
+
+            //112
+            UserDTO? userDTO = await _usersMicroserviceClient.GetUserByUserID(orderResponse.UserID);
+            if (userDTO != null)
+                _mapper.Map<UserDTO, OrderResponse?>(userDTO, orderResponse);
+        }
+
+        return orderResponses;
     }
 
     public async Task<List<OrderResponse?>> GetOrdersByConditionAsync(FilterDefinition<Order> filter)
     {
         IEnumerable<Order?> orders = await _ordersRepository.GetOrdersByConditionAsync(filter);
         List<Order?> ordersList = orders.ToList();
-        return _mapper.Map<List<OrderResponse?>>(ordersList);
+        List<OrderResponse?> orderResponses = _mapper.Map<List<OrderResponse?>>(ordersList);
+
+        // TO DO: Load ProductName and Category in each OrderItem //111
+        foreach (OrderResponse? orderResponse in orderResponses)
+        {
+            if (orderResponse == null)
+            {
+                continue;
+            }
+
+            foreach (OrderItemResponse orderItemResponse in orderResponse.OrderItems)
+            {
+                ProductDTO? productDTO = await _productsMicroserviceClient.GetProductByProductID(orderItemResponse.ProductID);
+                if (productDTO == null)
+                    continue;
+                _mapper.Map<ProductDTO, OrderItemResponse>(productDTO, orderItemResponse);
+            }
+            //112
+            UserDTO? userDTO = await _usersMicroserviceClient.GetUserByUserID(orderResponse.UserID);
+            if (userDTO != null)
+                _mapper.Map<UserDTO, OrderResponse?>(userDTO, orderResponse);
+        }
+
+        return orderResponses;
     }
 
     public async Task<OrderResponse?> UpdateOrderAsync(OrderUpdateRequest orderUpdateRequest)
@@ -150,6 +240,7 @@ public class OrdersService : IOrdersService
             }
         }
 
+        List<ProductDTO> productDTOs = new List<ProductDTO>();
         //TO DO: Add logic for checking if ProductID exists in Products microservice
         foreach (var orderItem in orderUpdateRequest.OrderItems)
         {
@@ -158,6 +249,7 @@ public class OrdersService : IOrdersService
             {
                 throw new ArgumentException($"Invalid Product ID: {orderItem.ProductID}");
             }
+            productDTOs.Add(productDTO);
         }
 
         //TO DO: Add logic for checking if UserID exists in Users microservice //104
@@ -165,7 +257,7 @@ public class OrdersService : IOrdersService
         if (userDto == null)
         {
             throw new ArgumentException("Invalid User ID");
-        }
+        }        
 
         Order order = _mapper.Map<Order>(orderUpdateRequest);
         //Generate values
@@ -177,6 +269,32 @@ public class OrdersService : IOrdersService
         Order? updatedOrder = await _ordersRepository.UpdateOrderAsync(order);
         if (updatedOrder == null)
             return null;
-        return _mapper.Map<OrderResponse>(updatedOrder);
+        OrderResponse updatedOrderResponse = _mapper.Map<OrderResponse>(updatedOrder);
+        //111
+        if (updatedOrderResponse != null)
+        {
+            foreach (OrderItemResponse orderItemResponse in updatedOrderResponse.OrderItems)
+            {
+                //ProductDTO? productDTO = await _productsMicroserviceClient.GetProductByProductID(orderItemResponse.ProductID);
+                ProductDTO? productDTO = productDTOs.Where(product => product.ProductID == orderItemResponse.ProductID).FirstOrDefault();
+                if (productDTO == null)
+                    continue;
+                _mapper.Map<ProductDTO, OrderItemResponse>(productDTO, orderItemResponse);
+            }
+        }
+        //112
+        //_mapper.Map<UserDTO, OrderResponse?>(userDto, updatedOrderResponse);
+        updatedOrderResponse = new OrderResponse(
+                                    updatedOrderResponse.OrderID,
+                                    updatedOrderResponse.UserID,
+                                    updatedOrderResponse.OrderDate,
+                                    updatedOrderResponse.TotalBill,
+                                    updatedOrderResponse.OrderItems,
+                                    userDto.PersonName ?? "",
+                                    userDto.Email ?? ""
+                                );
+
+
+        return updatedOrderResponse;
     }
 }

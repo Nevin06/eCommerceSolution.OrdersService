@@ -14,7 +14,7 @@ services:
      - ProductsMicroserviceName=products-microservice
      - ProductsMicroservicePort=8080
     ports:
-     - "7000:8080"
+     - "7001:8080"
     networks:
      - orders-mongodb-network
      - ecommerce-network
@@ -42,7 +42,7 @@ services:
      - MYSQL_USER=root 
      - MYSQL_PASSWORD=test
    ports:
-    - "6000:8080"
+    - "6001:8080"
    networks:
      - products-mysql-network
      - ecommerce-network
@@ -58,7 +58,7 @@ services:
    volumes:
    - "../73/products:/docker-entrypoint-initdb.d"
    networks:
-   - users-postgres-network
+   - products-mysql-network
 
   users-microservice:
    image: users-microservice:latest
@@ -85,7 +85,7 @@ services:
     - POSTGRES_PASSWORD=test
     - POSTGRES_DB=eCommerceUsers
    ports:
-    - 5432:5432
+    - 5433:5432
    volumes:
     - "../79/users:/docker-entrypoint-initdb.d"
    networks:

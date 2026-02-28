@@ -25,7 +25,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
-        builder.WithOrigins("http://localhost:4200") // Allow requests from the specified origin (e.g., Angular development server)
+        builder.WithOrigins("http://localhost:4200", "http://127.0.0.1:4200")// Allow requests from the specified origin (e.g., Angular development server)
         //.AllowAnyOrigin()
                .AllowAnyMethod()
                .AllowAnyHeader();
@@ -55,6 +55,7 @@ var app = builder.Build();
 app.UseExceptionHandlingMiddleware();
 
 app.UseRouting();
+app.UseCors();
 
 app.UseAuthorization();
 app.UseAuthentication();
@@ -64,10 +65,12 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("v1/swagger.json", "OrdersMicroService.API v1")
     );
 
-app.UseHttpsRedirection();
+//if (!app.Environment.IsDevelopment())
+//{
+//    app.UseHttpsRedirection();
+//}
 
 app.MapControllers();
 
-app.UseCors();
 
 app.Run();
