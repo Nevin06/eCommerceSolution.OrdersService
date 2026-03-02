@@ -105,16 +105,16 @@ public class OrdersService : IOrdersService
             }
         }
         //112
-        //_mapper.Map<UserDTO, OrderResponse?>(userDto, addedOrderResponse);
-        addedOrderResponse = new OrderResponse(
-                                    addedOrderResponse.OrderID,
-                                    addedOrderResponse.UserID,
-                                    addedOrderResponse.OrderDate,
-                                    addedOrderResponse.TotalBill,
-                                    addedOrderResponse.OrderItems,
-                                    userDto.PersonName ?? "",
-                                    userDto.Email ?? ""
-                                );
+        _mapper.Map<UserDTO, OrderResponse?>(userDto, addedOrderResponse);
+        //addedOrderResponse = new OrderResponse(
+        //                            addedOrderResponse.OrderID,
+        //                            addedOrderResponse.UserID,
+        //                            addedOrderResponse.OrderDate,
+        //                            addedOrderResponse.TotalBill,
+        //                            addedOrderResponse.OrderItems,
+        //                            userDto.PersonName ?? "",
+        //                            userDto.Email ?? ""
+        //                        );
 
         return addedOrderResponse;
     }
@@ -283,16 +283,16 @@ public class OrdersService : IOrdersService
             }
         }
         //112
-        //_mapper.Map<UserDTO, OrderResponse?>(userDto, updatedOrderResponse);
-        updatedOrderResponse = new OrderResponse(
-                                    updatedOrderResponse.OrderID,
-                                    updatedOrderResponse.UserID,
-                                    updatedOrderResponse.OrderDate,
-                                    updatedOrderResponse.TotalBill,
-                                    updatedOrderResponse.OrderItems,
-                                    userDto.PersonName ?? "",
-                                    userDto.Email ?? ""
-                                );
+        _mapper.Map<UserDTO, OrderResponse?>(userDto, updatedOrderResponse);
+        //updatedOrderResponse = new OrderResponse(
+        //                            updatedOrderResponse.OrderID,
+        //                            updatedOrderResponse.UserID,
+        //                            updatedOrderResponse.OrderDate,
+        //                            updatedOrderResponse.TotalBill,
+        //                            updatedOrderResponse.OrderItems,
+        //                            userDto.PersonName ?? "",
+        //                            userDto.Email ?? ""
+        //                        );
 
 
         return updatedOrderResponse;
