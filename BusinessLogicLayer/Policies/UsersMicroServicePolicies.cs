@@ -64,8 +64,8 @@ public class UsersMicroServicePolicies : IUsersMicroservicePolicies
         //var circuitBreakerPolicy = GetCircuitBreakerPolicy();
         //var timeoutPolicy = GetTimeoutPolicy();
 
-        var retryPolicy = _pollyPolicies.GetRetryPolicy(5);
-        var circuitBreakerPolicy = _pollyPolicies.GetCircuitBreakerPolicy(3, TimeSpan.FromMinutes(2));
+        var retryPolicy = _pollyPolicies.GetRetryPolicy(1);
+        var circuitBreakerPolicy = _pollyPolicies.GetCircuitBreakerPolicy(1, TimeSpan.FromMinutes(2));
         var timeoutPolicy = _pollyPolicies.GetTimeoutPolicy(TimeSpan.FromSeconds(5)); //130
 
         AsyncPolicyWrap<HttpResponseMessage> policy = Policy.WrapAsync(retryPolicy, circuitBreakerPolicy, timeoutPolicy);

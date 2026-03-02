@@ -40,7 +40,7 @@ public class ProductsMicroServicePolicies : IProductsMicroservicePolicies
             _logger.LogWarning("Fallback triggred: Products Microservice is unavailable. Returning dummy data.");
             ProductDTO productDTO = new ProductDTO(ProductID: Guid.Empty, ProductName: "Temporarily Unavailable(fallback)", UnitPrice: 0.0
                 , Category: "Temporarily Unavailable(fallback)", Quantity: 0);
-            HttpResponseMessage fallbackResponse = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            HttpResponseMessage fallbackResponse = new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable) //138
             {
                 //Content = new StringContent("[{\"ProductID\": \"00000000-0000-0000-0000-000000000000\", \"ProductName\": \"Temporarily Unavailable\", \"Price\": 0.0}]")
                 Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(productDTO), Encoding.UTF8, "application/json")

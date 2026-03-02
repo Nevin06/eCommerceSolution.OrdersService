@@ -13,6 +13,8 @@ services:
      - UsersMicroservicePort=9090
      - ProductsMicroserviceName=products-microservice
      - ProductsMicroservicePort=8080
+     - REDIS_HOST=redis-container
+     - REDIS_PORT=6379
     ports:
      - "7001:8080"
     networks:
@@ -90,6 +92,15 @@ services:
     - "../79/users:/docker-entrypoint-initdb.d"
    networks:
     - users-postgres-network
+    - ecommerce-network
+
+  redis-container:
+   image: redis:latest
+   ports:
+    - "6379:6379"
+   volumes:
+    - "../134/redis-cache:/data"
+   networks:
     - ecommerce-network
 
 networks:

@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add DAL and BLL services 83
 builder.Services.AddDataAccessLayer(builder.Configuration);
-builder.Services.AddBusinessLogicLayer();
+builder.Services.AddBusinessLogicLayer(builder.Configuration);
 
 // Add Controllers
 builder.Services.AddControllers();
