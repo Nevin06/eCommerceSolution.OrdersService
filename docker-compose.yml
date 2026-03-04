@@ -9,9 +9,13 @@ services:
      - MONGODB_HOST=mongodb-container
      - MONGODB_PORT=27017
      - MONGODB_DATABASE=OrdersDatabase
-     - UsersMicroserviceName=users-microservice
-     - UsersMicroservicePort=9090
-     - ProductsMicroserviceName=products-microservice
+     # - UsersMicroserviceName=users-microservice
+     - UsersMicroserviceName=apigateway
+     # - UsersMicroservicePort=9090
+     - UsersMicroservicePort=8080
+     # - ProductsMicroserviceName=products-microservice
+     # - ProductsMicroservicePort=8080
+     - ProductsMicroserviceName=apigateway
      - ProductsMicroservicePort=8080
      - REDIS_HOST=redis-container
      - REDIS_PORT=6379
@@ -100,6 +104,40 @@ services:
     - "6379:6379"
    volumes:
     - "../134/redis-cache:/data"
+   networks:
+    - ecommerce-network
+
+  apigateway:
+   image: apigateway
+   build:
+    context: .
+    dockerfile: APiGateway/Dockerfile
+   environment:
+    - ASPNETCORE_HTTP_PORTS=8080
+    - ASPNETCORE_ENVIRONMENT=Development
+    - OrdersMicroserviceName=ordersmicroservice.api
+    - OrdersMicroservicePort=7001
+    - UsersMicroserviceName=users-microservice
+    - UsersMicroservicePort=5000
+    - ProductsMicroserviceName=products-microservice
+    - ProductsMicroservicePort=6001
+   ports:
+    - "4000:8080"
+   networks:
+    - ecommerce-network
+   depends_on:
+    - ordersmicroservice.api
+    - users-microservice
+    - products-microservice
+
+  rabbitmq-container:
+   image: rabbitmq:4.2-management
+   environment:
+    - RABBITMQ_DEFAULT_USER=user
+    - RABBITMQ_DEFAULT_PASS=password
+   ports:
+    - "5672:5672"
+    - "15672:15672"
    networks:
     - ecommerce-network
 

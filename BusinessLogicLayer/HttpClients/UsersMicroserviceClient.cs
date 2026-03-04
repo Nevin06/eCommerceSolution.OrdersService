@@ -35,7 +35,8 @@ public class UsersMicroserviceClient
                 UserDTO? userFromCache = System.Text.Json.JsonSerializer.Deserialize<UserDTO>(cachedUser);
                 return userFromCache;
             }
-            HttpResponseMessage response = await _httpClient.GetAsync($"/api/Users/{userID}");
+            //HttpResponseMessage response = await _httpClient.GetAsync($"/api/Users/{userID}");
+            HttpResponseMessage response = await _httpClient.GetAsync($"/gateway/Users/{userID}"); //147
 
             if (!response.IsSuccessStatusCode)
             {

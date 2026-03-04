@@ -34,7 +34,8 @@ public class ProductsMicroserviceClient
                 return productFromCache;
             }
 
-            HttpResponseMessage response = await _httpClient.GetAsync($"/api/products/search/productid/{ProductID}");
+            //HttpResponseMessage response = await _httpClient.GetAsync($"/api/products/search/productid/{ProductID}");
+            HttpResponseMessage response = await _httpClient.GetAsync($"/gateway/products/search/productid/{ProductID}"); //147
 
             if (!response.IsSuccessStatusCode)
             {
