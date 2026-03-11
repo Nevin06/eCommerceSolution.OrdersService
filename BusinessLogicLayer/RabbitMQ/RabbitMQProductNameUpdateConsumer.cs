@@ -27,10 +27,20 @@ namespace eCommerce.OrdersMicroService.BusinessLogicLayer.RabbitMQ
         {
             try
             {
-                string routingKey = "product.update.*"; //166
+                //string routingKey = "product.update.*"; //166
+                //167
+                var headers = new Dictionary<string, object>
+                {
+                    {  "x-match", "all"  }, // for header exchange, specify that all headers must match // any for any header match 
+                    { "eventType", "product.update" },
+                    { "field", "name" },
+                    {"RowCount", 1 }
+                    //{ "timestamp", DateTime.UtcNow }
+                };
+
                 //string queueName = _configuration["RABBITMQ_PRODUCTS_NAME_UPDATE_QUEUE"]!;
                 string queueName = "orders.product.update.name.queue";
-                _logger.LogInformation("RabbitMQPublisher.Publish START, routingKey={routingKey}", routingKey);
+                //_logger.LogInformation("RabbitMQPublisher.Publish START, routingKey={routingKey}", routingKey);
                 string hostName = _configuration["RABBITMQ_HOST"]!;
                 string userName = _configuration["RABBITMQ_USERNAME"]!;
                 string password = _configuration["RABBITMQ_PASSWORD"]!;
@@ -55,14 +65,14 @@ namespace eCommerce.OrdersMicroService.BusinessLogicLayer.RabbitMQ
 
                 _logger.LogInformation("Declaring exchange {exchange}", exchangeName);
                 // If the exchange already exists, this will do nothing. If it doesn't exist, it will be created.
-                await _channel.ExchangeDeclareAsync(exchange: exchangeName, type: ExchangeType.Topic, durable: true); //159 //165 //166
-                _logger.LogInformation("Consumed message to {exchange} / {routingKey}", exchangeName, routingKey);
+                await _channel.ExchangeDeclareAsync(exchange: exchangeName, type: ExchangeType.Headers, durable: true); //159 //165 //166 //167
+                _logger.LogInformation("Consumed message to {exchange} ", exchangeName);
 
                 //161
                 await _channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null); //arguments => x-message-ttl time to live | x-max-length max queue length | x-expires queue expiration time
 
                 // Bind the queue to the exchange with the routing key
-                await _channel.QueueBindAsync(queue: queueName, exchange: exchangeName, routingKey: routingKey); //165 - for fanout exchange, routing key is ignored, so we can use an empty string //166
+                await _channel.QueueBindAsync(queue: queueName, exchange: exchangeName, routingKey: string.Empty, arguments: headers); //165 - for fanout exchange, routing key is ignored, so we can use an empty string //166 //167 - for header exchange, routing key is ignored, so we can use an empty string
 
                 //162
                 AsyncEventingBasicConsumer consumer = new AsyncEventingBasicConsumer(_channel);
