@@ -1,4 +1,5 @@
 ﻿using eCommerce.OrdersMicroService.BusinessLogicLayer.Mappers;
+using eCommerce.OrdersMicroService.BusinessLogicLayer.RabbitMQ;
 using eCommerce.OrdersMicroService.BusinessLogicLayer.ServiceContracts;
 using eCommerce.OrdersMicroService.BusinessLogicLayer.Services;
 using eCommerce.OrdersMicroService.BusinessLogicLayer.Validators;
@@ -22,6 +23,11 @@ public static class DependencyInjection
             options.Configuration = $"{configuration["REDIS_HOST"]}:{configuration["REDIS_PORT"]}";
             options.InstanceName = "OrdersMicroServiceCache";
         }); //135
+
+        services.AddTransient<IRabbitMQProductNameUpdateConsumer, RabbitMQProductNameUpdateConsumer>(); //163
+        services.AddHostedService<RabbitMQProductNameUpdateHostedService>(); //163
+        services.AddTransient<IRabbitMQProductDeleteConsumer, RabbitMQProductDeleteConsumer>(); //164
+        services.AddHostedService<RabbitMQProductDeleteHostedService>(); //164
         return services;
     }
 }

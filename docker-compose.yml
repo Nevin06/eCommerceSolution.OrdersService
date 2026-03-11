@@ -19,6 +19,11 @@ services:
      - ProductsMicroservicePort=8080
      - REDIS_HOST=redis-container
      - REDIS_PORT=6379
+     - RABBITMQ_HOST=rabbitmq-container
+     - RABBITMQ_USERNAME=user
+     - RABBITMQ_PASSWORD=password
+     - RABBITMQ_PORT=5672
+     - RABBITMQ_PRODUCTS_EXCHANGE=products.exchange
     ports:
      - "7001:8080"
     networks:
@@ -47,6 +52,11 @@ services:
      - MYSQL_DATABASE=ecommerceproductsdatabase
      - MYSQL_USER=root 
      - MYSQL_PASSWORD=test
+     - RABBITMQ_HOST=rabbitmq-container
+     - RABBITMQ_USERNAME=user
+     - RABBITMQ_PASSWORD=password
+     - RABBITMQ_PORT=5672
+     - RABBITMQ_PRODUCTS_EXCHANGE=products.exchange
    ports:
     - "6001:8080"
    networks:
