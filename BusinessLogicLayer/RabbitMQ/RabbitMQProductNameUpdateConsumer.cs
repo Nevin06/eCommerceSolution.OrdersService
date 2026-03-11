@@ -55,14 +55,14 @@ namespace eCommerce.OrdersMicroService.BusinessLogicLayer.RabbitMQ
 
                 _logger.LogInformation("Declaring exchange {exchange}", exchangeName);
                 // If the exchange already exists, this will do nothing. If it doesn't exist, it will be created.
-                await _channel.ExchangeDeclareAsync(exchange: exchangeName, type: ExchangeType.Direct, durable: true); //159
+                await _channel.ExchangeDeclareAsync(exchange: exchangeName, type: ExchangeType.Fanout, durable: true); //159 //165
                 _logger.LogInformation("Consumed message to {exchange} / {routingKey}", exchangeName, routingKey);
 
                 //161
                 await _channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null); //arguments => x-message-ttl time to live | x-max-length max queue length | x-expires queue expiration time
 
                 // Bind the queue to the exchange with the routing key
-                await _channel.QueueBindAsync(queue: queueName, exchange: exchangeName, routingKey: routingKey);
+                await _channel.QueueBindAsync(queue: queueName, exchange: exchangeName, routingKey: string.Empty); //165 - for fanout exchange, routing key is ignored, so we can use an empty string
 
                 //162
                 AsyncEventingBasicConsumer consumer = new AsyncEventingBasicConsumer(_channel);
