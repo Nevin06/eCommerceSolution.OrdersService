@@ -1,7 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using eCommerce.OrdersMicroService.BusinessLogicLayer.DTO;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System.Text.Json;
 
 namespace eCommerce.OrdersMicroService.BusinessLogicLayer.RabbitMQ
 {
@@ -12,10 +15,13 @@ namespace eCommerce.OrdersMicroService.BusinessLogicLayer.RabbitMQ
         private IConnection _connection;
         private IChannel _channel;
         private readonly ILogger<RabbitMQProductNameUpdateConsumer> _logger;
-        public RabbitMQProductNameUpdateConsumer(IConfiguration configuration, ILogger<RabbitMQProductNameUpdateConsumer> logger)
+        private readonly IDistributedCache _cache;
+
+        public RabbitMQProductNameUpdateConsumer(IConfiguration configuration, ILogger<RabbitMQProductNameUpdateConsumer> logger, IDistributedCache cache)
         {
             _configuration = configuration;
             _logger = logger;
+            _cache = cache;
         }
         public void Dispose()
         {
@@ -33,7 +39,7 @@ namespace eCommerce.OrdersMicroService.BusinessLogicLayer.RabbitMQ
                 {
                     {  "x-match", "all"  }, // for header exchange, specify that all headers must match // any for any header match 
                     { "eventType", "product.update" },
-                    { "field", "name" },
+                    //{ "field", "name" }, //168
                     {"RowCount", 1 }
                     //{ "timestamp", DateTime.UtcNow }
                 };
@@ -86,9 +92,17 @@ namespace eCommerce.OrdersMicroService.BusinessLogicLayer.RabbitMQ
                         // Process the message here (e.g., update product name in the database)
                         if (message != null)
                         {
-                            ProductNameUpdateMessage? updateMessage = System.Text.Json.JsonSerializer.Deserialize<ProductNameUpdateMessage>(message);
+                            //ProductNameUpdateMessage? updateMessage = System.Text.Json.JsonSerializer.Deserialize<ProductNameUpdateMessage>(message);
+                            ProductDTO? updateMessage = System.Text.Json.JsonSerializer.Deserialize<ProductDTO>(message); //168
+
+                            //Key: product:123
+                            //Value: {ProductID: 123, ProductName: "Product A", UnitPrice: 10.0, Category: "Category A", Quantity: 100}
+                            string productJson = JsonSerializer.Serialize(updateMessage);
+                            DistributedCacheEntryOptions options = new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(300));
+                            await _cache.SetStringAsync($"product:{updateMessage?.ProductID}", productJson, options);
+
                             _logger.LogInformation("Deserialized message: {updateMessage}", updateMessage);
-                            _logger.LogInformation("Updating product name for ProductID: {ProductID} to NewName: {NewName}", updateMessage?.ProductID, updateMessage?.NewName);
+                            _logger.LogInformation("Updating product name for ProductID: {ProductID} to NewName: {NewName}", updateMessage?.ProductID, updateMessage?.ProductName); //168
                         }
                         // Acknowledge the message after processing
                         await _channel.BasicAckAsync(deliveryTag: eventArgs.DeliveryTag, multiple: false);

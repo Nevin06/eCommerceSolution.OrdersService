@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -12,10 +14,13 @@ namespace eCommerce.OrdersMicroService.BusinessLogicLayer.RabbitMQ
         private IConnection _connection;
         private IChannel _channel;
         private readonly ILogger<RabbitMQProductDeleteConsumer> _logger;
-        public RabbitMQProductDeleteConsumer(IConfiguration configuration, ILogger<RabbitMQProductDeleteConsumer> logger)
+        private readonly IDistributedCache _cache;
+
+        public RabbitMQProductDeleteConsumer(IConfiguration configuration, ILogger<RabbitMQProductDeleteConsumer> logger, IDistributedCache cache)
         {
             _configuration = configuration;
             _logger = logger;
+            _cache = cache;
         }
         public void Dispose()
         {
@@ -86,6 +91,10 @@ namespace eCommerce.OrdersMicroService.BusinessLogicLayer.RabbitMQ
                         if (message != null)
                         {
                             ProductDeleteMessage? deleteMessage = System.Text.Json.JsonSerializer.Deserialize<ProductDeleteMessage>(message);
+
+                            //168
+                            await _cache.RemoveAsync($"product:{deleteMessage?.ProductID}");
+
                             _logger.LogInformation("Deserialized message: {deleteMessage}", deleteMessage);
                             _logger.LogInformation("Deleted product with ProductID: {ProductID} and ProductName: {ProductName}", deleteMessage?.ProductID, deleteMessage?.ProductName);
                         }
