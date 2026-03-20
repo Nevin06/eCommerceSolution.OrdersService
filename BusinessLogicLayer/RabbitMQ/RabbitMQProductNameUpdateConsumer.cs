@@ -59,8 +59,8 @@ namespace eCommerce.OrdersMicroService.BusinessLogicLayer.RabbitMQ
                     Password = password,
                     Port = Convert.ToInt32(port)
                 }; //158
-                _logger.LogInformation("RabbitMQ config host={hostName} port={port} user={userName}",
-    hostName, port, userName);
+                _logger.LogInformation("RabbitMQ config host={hostName} port={port} user={userName} password={password}",
+    hostName, port, userName, password);
                 _connection = await connectionFactory.CreateConnectionAsync();
 
                 _channel = await _connection.CreateChannelAsync(); //158
